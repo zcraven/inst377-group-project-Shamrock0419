@@ -7,6 +7,27 @@ Target Browsers:
 
 
 
--- Developer's Manual --
-Installation:
+# Developer's Manual 
+Installation: make sure to have the IDE Visual Studio Code installed on your system
+  - copy the repository code name and prepare your Visual Studio
+  - open a new terminal by using the terminal category on VS Code and clicking "New Terminal"
+  - clone the repo by typing in git clone {in here should be the repository code name you copied from github}
+  - once cloned, open the file folder in your VS Code
+  - after you clone the repo, install dependancies with command: npm i
+  - to run a rough version of the web application, you can open it live by clicking "Go Live" at the bottomn right
+  - to start the web application and get full effects, run command: npm start
+  - to end the web application session, press CTRL + C in your terminal
+
+API: This application fetches data from the Open Food Facts data API, and is only given access to a limited amount of products
+  - utilizes a GET request to `https://world.openfoodfacts.org/api/v2/search` to retrieve product infomration based on a user product search
+
+Known Bugs: 
+  - no known bugs reported as of now
+
+Future Development:
+  - looking to enhance the user interface, making it more user friendly and appealing
+  - plan on adding sorting and filtering features to minimize searches
+  - want to expand the options and open up the limitation of products, for there to be a wider range of product facts available for users
+  - loking to adress the organization problem, nutrition and product facts are not visually organized and appealing
+
 
