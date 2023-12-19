@@ -1,0 +1,236 @@
+<html>
+    <head>
+        <title>Welcome To FoodFacts!</title>
+        <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    </head>
+    <style>
+        body {
+            background-color: lightcyan;
+        }
+        #main-text {
+            border: 2px solid black;
+            background-color: lightgray;    
+            display: inline-block;
+            text-align: center;
+            margin: 5px 0px 5px 0px;
+            font-style: italic;
+            width: 100%;
+        }
+        #main-navi {
+            background-color: gray;
+            color: white;
+        }
+        #main-navi ul li {
+            list-style-type: none;
+            display: inline-block;
+            text-align: center;
+            width: 30%;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+        #main-navi li:hover {
+            background-color: purple;
+            color: white;
+        }
+        #announcement-area {
+            float: left;
+        }
+        #sidebar {
+            border: 2px solid black;
+            background-color:olive;
+            width: 25%;
+            text-align: center;
+            margin-left: 10px;
+            padding-left: 10px;
+            float: right;
+            color: white;
+        }
+        #bottom {
+            text-align: center;
+            padding: 2px;
+            background-color: lightgray;
+            color: black;
+            bottom: 70;
+            position: fixed;
+            width: 100%;
+        }
+        .button1 {
+            background-color: white; 
+            color: black; 
+            border: 2px solid black;
+        }
+
+        .button1:hover {
+            background-color: blue;
+            color: white;
+        }
+        .main-area {
+            background-color:mediumspringgreen;
+            width: 70%;
+            height: 100%;
+        }
+        .text-area {
+            background-color: lightskyblue;
+            padding: 10px;
+            margin: 10px;
+        }
+        .center {
+            display: block;
+            width: 5%;
+        }  
+        .button-15 {
+            background-image: linear-gradient(#42A1EC, #0070C9);
+            border: 1px solid #0077CC;
+            border-radius: 4px;
+            box-sizing: border-box;
+            color: #FFFFFF;
+            cursor: pointer;
+            direction: ltr;
+            display: block;
+            font-family: "SF Pro Text","SF Pro Icons","AOS Icons","Helvetica Neue",Helvetica,Arial,sans-serif;
+            font-size: 17px;
+            font-weight: 400;
+            letter-spacing: -.022em;
+            line-height: 1.47059;
+            min-width: 30px;
+            overflow: visible;
+            padding: 4px 15px;
+            text-align: center;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            white-space: nowrap;
+        }
+
+        .button-15:disabled {
+            cursor: default;
+            opacity: .3;
+        }
+
+        .button-15:hover {
+            background-image: linear-gradient(#51A9EE, #147BCD);
+            border-color: #1482D0;
+            text-decoration: none;
+        }
+
+        .button-15:active {
+            background-image: linear-gradient(#3D94D9, #0067B9);
+            border-color: #006DBC;
+            outline: none;
+        }
+
+        .button-15:focus {
+            box-shadow: rgba(131, 192, 253, 0.5) 0 0 0 3px;
+            outline: none;
+        }
+        #typed-output {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            font-family:Georgia, 'Times New Roman', Times, serif;
+        }
+    </style>
+
+    <body>
+        <div id = "main-text">
+            <h1>FoodFacts Home Page</h1>
+        </div>
+
+        <!--Navigation Board-->
+        <nav id="main-navi">
+            <ul>
+                <li><a href="Index.html">Home</a></li>
+                <li><a href="FoodFacts_AboutPage.html">About</a></li>
+            </ul>
+        </nav>
+
+        <form>
+            <label for="product-name">Product Name:</label>
+            <input type="text" id="product-name" name="product-name" required>
+            <br><br>
+            <button id="search-product" type="submit" class = "button-15">Search</button> 
+
+            <div id="typed-output"></div>
+
+            <div id="product-info"></div>
+        </form>
+        <!--Footer Code-->
+        <footer id = "bottom">
+            <p1>Learn more about your foods today!</p1>
+        </footer>
+
+    <script defer>
+        // code for Type.js for type animation
+
+        document.addEventListener('DOMContentLoaded', function(){
+            var options = {
+                strings: ['Are you worried about what goes into your body?', 'Fear not, FoodFacts is here to save you!'],
+                typeSpeed: 25,
+                backSpeed: 20,
+                loop: false
+                };
+
+                // Initialize Typed.js
+                var typed = new Typed('#typed-output', options);
+        });
+
+        // code for foodfact api
+
+            document.querySelector('form').addEventListener('submit', function (event) {
+                event.preventDefault();
+                const productName = document.getElementById('product-name').value.toLowerCase();
+                const apiURL = `https://world.openfoodfacts.org/api/v2/search?search_terms=${productName}&page_size=90&json=true`;
+
+                fetch(apiURL)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        const products = data.products;
+
+                        if (products.length > 0) {
+                    // Find the product that partially matches the search term
+                            const matchingProduct = products.find(product => product.product_name.toLowerCase().includes(productName));
+
+                            if (matchingProduct) {
+                            // Display information for the matching product
+                            const productInfoContainer = document.getElementById('product-info');
+                            
+                            // Clear previous content
+                            productInfoContainer.innerHTML = '';
+
+                            // Create HTML elements for each piece of information
+                            const title = document.createElement('h2');
+                            title.textContent = `Product Name: ${matchingProduct.product_name}`;
+
+                            const ingredients = document.createElement('p');
+                            ingredients.textContent = `Ingredients: ${matchingProduct.ingredients_text}`;
+
+                            const nutritionalInfo = document.createElement('p');
+                            nutritionalInfo.textContent = `Nutritional Information: ${JSON.stringify(matchingProduct.nutriments)}`;
+
+                            const hr = document.createElement('hr');
+
+                            // Append elements to the container
+                            productInfoContainer.appendChild(title);
+                            productInfoContainer.appendChild(ingredients);
+                            productInfoContainer.appendChild(nutritionalInfo);
+                            productInfoContainer.appendChild(hr);
+                        } else {
+                        // Handle the case when no matching product is found
+                        document.getElementById('product-info').innerHTML = 'Product not found.';
+                        }
+                    } else {
+                    // Handle the case when no products are found
+                    document.getElementById('product-info').innerHTML = 'No products found.';
+                    }
+                })
+                    .catch(error => {
+                        console.error('Error:', error.message);
+                        document.getElementById('product-info').innerHTML = 'An error occurred while fetching the product information.';
+            });
+    }); 
+
+    </script>
+    </body>
+</html>
