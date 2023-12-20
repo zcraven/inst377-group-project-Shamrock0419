@@ -19,7 +19,7 @@
         </nav>
 
         <form>
-            <label for="product-name">Product Name:</label>
+            <label for="product-name">Product Name or Barcode (ex: Nutella, or 3017624010701):</label>
             <input type="text" id="product-name" name="product-name" required>
             <br><br>
             <button id="search-product" type="submit" class = "button-15">Search</button> 
@@ -127,89 +127,117 @@
 
     return mapping[codifiedName] || codifiedName;
 }
+    // Function to handle API errors
+    function handleApiError(error) {
+        console.error('Error:', error.message);
+        document.getElementById('product-info').innerHTML = 'An error occurred while fetching the product information.';
+    }
 
-        
-            // code for foodfact api
-            document.querySelector('form').addEventListener('submit', function (event) {
-                event.preventDefault();
-                const productName = document.getElementById('product-name').value.toLowerCase();
-                const apiURL = `https://world.openfoodfacts.org/api/v2/search?search_terms=${productName}&page_size=90&json=true`;
-        
-                fetch(apiURL)
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data);
-                        const products = data.products;
-        
-                        if (products.length > 0) {
-                            // Find the product that partially matches the search term
-                            const matchingProduct = products.find(product => product.product_name.toLowerCase().includes(productName));
-        
-                            if (matchingProduct) {
-                                // Display information for the matching product
-                                const productInfoContainer = document.getElementById('product-info');
-        
-                                // Clear previous content
-                                productInfoContainer.innerHTML = '';
-        
-                                // Create HTML elements for each piece of information
-                                const title = document.createElement('h2');
-                                title.textContent = `Product Name: ${matchingProduct.product_name}`;
-        
-                                const ingredients = document.createElement('p');
-                                ingredients.textContent = `Ingredients: ${matchingProduct.ingredients_text}`;
-        
-                                // New code for nutritional information table
-                                const table = document.createElement('table');
-                                const tbody = document.createElement('tbody');
-        
-                                const addRow = (label, value, unit) => {
-                                    const row = document.createElement('tr');
-                                    const cellLabel = document.createElement('td');
-                                    const cellValue = document.createElement('td');
-        
-                                    // Convert codified name to readable name
-                                    const readableLabel = convertToReadableName(label);
-        
-                                    cellLabel.textContent = readableLabel;
-                                    cellValue.textContent = `${value} ${unit || ''}`; // Concatenate value and unit
-        
-                                    row.appendChild(cellLabel);
-                                    row.appendChild(cellValue);
-        
-                                    tbody.appendChild(row);
-                                };
-        
-                                for (const key in matchingProduct.nutriments) {
-                                    const unitKey = `${key}_unit`;
-                                    const unit = matchingProduct[unitKey] || ''; // Get the unit from the separate key
-                                    addRow(key, matchingProduct.nutriments[key], unit);
-                                }
-        
-                                table.appendChild(tbody);
-                                // End of new code
-        
-                                const hr = document.createElement('hr');
-        
-                                // Append elements to the container
-                                productInfoContainer.appendChild(title);
-                                productInfoContainer.appendChild(ingredients);
-                                productInfoContainer.appendChild(table); // Add the table to the container
-                                productInfoContainer.appendChild(hr);
-                            } else {
-                                // Handle the case when no matching product is found
-                                document.getElementById('product-info').innerHTML = 'Product not found.';
-                            }
+    // Function to display product information
+    function displayProductInfo(matchingProduct) {
+        const productInfoContainer = document.getElementById('product-info');
+        productInfoContainer.innerHTML = ''; // Clear previous content
+
+        const title = document.createElement('h2');
+        title.textContent = `Product Name: ${matchingProduct.product_name}`;
+
+        const ingredients = document.createElement('p');
+        ingredients.textContent = `Ingredients: ${matchingProduct.ingredients_text}`;
+
+        const table = document.createElement('table');
+        const tbody = document.createElement('tbody');
+
+        const addRow = (label, value, unit) => {
+            const row = document.createElement('tr');
+            const cellLabel = document.createElement('td');
+            const cellValue = document.createElement('td');
+
+            const readableLabel = convertToReadableName(label);
+
+            cellLabel.textContent = readableLabel;
+            cellValue.textContent = `${value} ${unit || ''}`;
+
+            row.appendChild(cellLabel);
+            row.appendChild(cellValue);
+
+            tbody.appendChild(row);
+        };
+
+        for (const key in matchingProduct.nutriments) {
+            const unitKey = `${key}_unit`;
+            const unit = matchingProduct[unitKey] || '';
+            addRow(key, matchingProduct.nutriments[key], unit);
+        }
+
+        table.appendChild(tbody);
+
+        const hr = document.createElement('hr');
+
+        // Append elements to the container
+        productInfoContainer.appendChild(title);
+        productInfoContainer.appendChild(ingredients);
+        productInfoContainer.appendChild(table);
+        productInfoContainer.appendChild(hr);
+    }
+
+    document.querySelector('form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const userInput = document.getElementById('product-name').value;
+
+        if (!isNaN(userInput)) {
+            // If userInput is a number, it's a barcode
+            const apiURLBarcode = `https://world.openfoodfacts.net/api/v2/product/${userInput}`;
+
+            fetch(apiURLBarcode)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const matchingProduct = data.product;
+
+                    if (matchingProduct) {
+                        // Display information for the matching product
+                        displayProductInfo(matchingProduct);
+                    } else {
+                        // Handle the case when no matching product is found
+                        document.getElementById('product-info').innerHTML = 'Product not found.';
+                    }
+                })
+                .catch(handleApiError);
+        } else {
+            // If userInput is not a number, it's a product name
+            const productName = userInput.toLowerCase();
+            const apiURL = `https://world.openfoodfacts.org/api/v2/search?search_terms=${productName}&page_size=90&json=true`;
+
+            fetch(apiURL)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    const products = data.products;
+
+                    if (products.length > 0) {
+                        const matchingProduct = products.find(product => product.product_name.toLowerCase().includes(productName));
+
+                        if (matchingProduct) {
+                            // Display information for the matching product
+                            displayProductInfo(matchingProduct);
                         } else {
-                            // Handle the case when no products are found
-                            document.getElementById('product-info').innerHTML = 'No products found.';
+                            // Handle the case when no matching product is found
+                            document.getElementById('product-info').innerHTML = 'Product not found.';
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error.message);
-                        document.getElementById('product-info').innerHTML = 'An error occurred while fetching the product information.';
-                    });
-            });
+                    } else {
+                        // Handle the case when no products are found
+                        document.getElementById('product-info').innerHTML = 'No products found.';
+                    }
+                })
+                .catch(handleApiError);
+        }
+    });
+</script>
+
+           
+
+            
+            
         </script>
     </body>
 </html>
